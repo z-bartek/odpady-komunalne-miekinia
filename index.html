@@ -389,8 +389,8 @@ monthSel.addEventListener("change",render);
 
 // ustawienia domyślne
 populateLocations();
-locSel.value = "Wilkszyn 1 (poza wskazanymi ulicami)";
-monthSel.value = "5"; // czerwiec
+locSel.value = "Brzezina, Wilkszyn 2 (ul. Grabowa, Wiśniowa i pozostałe wskazane)";
+monthSel.value = String(new Date().getMonth()); // bieżący miesiąc (0 = styczeń … 11 = grudzień)
 render();
 </script>
 </body>
