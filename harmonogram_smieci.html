@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Harmonogram wywozu śmieci 2026 — Gmina Miękinia</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Spline+Sans:wght@400;500;600&display=swap');
+
+  :root{
+    --bg:#0f1410;
+    --panel:#171e18;
+    --panel-2:#1d251e;
+    --line:#2c3a2d;
+    --ink:#eef3ec;
+    --muted:#9bab9c;
+    --accent:#7bd389;
+    --zmieszane:#8a8f99;
+    --tworzywa:#f2c14e;
+    --zielone:#b07b46;   /* brązowy — bio/odpady zielone wg gminy */
+    --papier:#5ba9e8;
+    --szklo:#52c7b8;
+    --wystawka:#e07a5f;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:
+      radial-gradient(900px 500px at 85% -10%, rgba(123,211,137,.10), transparent 60%),
+      radial-gradient(700px 400px at -10% 110%, rgba(91,169,232,.08), transparent 55%),
+      var(--bg);
+    color:var(--ink);
+    font-family:'Spline Sans',system-ui,sans-serif;
+    line-height:1.5;
+    min-height:100vh;
+    padding:32px 18px 64px;
+  }
+  .wrap{max-width:760px;margin:0 auto;}
+  header{margin-bottom:22px;}
+  .kicker{
+    font-size:12px;letter-spacing:.22em;text-transform:uppercase;
+    color:var(--accent);font-weight:600;margin-bottom:8px;
+  }
+  h1{
+    font-family:'Fraunces',serif;font-weight:600;
+    font-size:clamp(28px,5vw,42px);line-height:1.05;margin:0 0 6px;
+    letter-spacing:-.01em;
+  }
+  .sub{color:var(--muted);font-size:15px;max-width:54ch;}
+
+  /* przełącznik (suwak) zabudowy */
+  .modeswitch{
+    position:relative;display:grid;grid-template-columns:1fr 1fr;
+    background:var(--panel);border:1px solid var(--line);border-radius:14px;
+    padding:5px;margin:24px 0 4px;
+  }
+  .modeswitch .slider{
+    position:absolute;top:5px;bottom:5px;left:5px;width:calc(50% - 5px);
+    background:var(--accent);border-radius:10px;transition:transform .26s cubic-bezier(.5,.05,.2,1);
+  }
+  .modeswitch.right .slider{transform:translateX(100%);}
+  .modebtn{
+    position:relative;z-index:1;background:none;border:none;cursor:pointer;
+    font:inherit;font-weight:600;font-size:14.5px;padding:11px 8px;border-radius:10px;
+    color:var(--muted);transition:color .2s;
+  }
+  .modebtn.active{color:#0f1410;}
+  .modehint{font-size:12px;color:var(--muted);margin:6px 2px 0;}
+
+  .controls{
+    display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:18px 0 8px;
+  }
+  @media(max-width:520px){.controls{grid-template-columns:1fr;}}
+  .field label{
+    display:block;font-size:12px;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--muted);margin-bottom:7px;font-weight:600;
+  }
+  select{
+    width:100%;appearance:none;background:var(--panel);color:var(--ink);
+    border:1px solid var(--line);border-radius:12px;padding:13px 40px 13px 14px;
+    font:inherit;font-size:15px;cursor:pointer;transition:border-color .15s,background .15s;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%239bab9c' stroke-width='2.4'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat:no-repeat;background-position:right 14px center;
+  }
+  select:hover{border-color:var(--accent);}
+  select:focus{outline:none;border-color:var(--accent);background:var(--panel-2);}
+
+  .result{margin-top:24px;}
+  .result-head{
+    display:flex;align-items:baseline;justify-content:space-between;
+    gap:12px;flex-wrap:wrap;margin-bottom:14px;
+  }
+  .result-head h2{font-family:'Fraunces',serif;font-weight:600;font-size:22px;margin:0;}
+  .result-head .where{color:var(--muted);font-size:13px;text-align:right;max-width:60%;}
+
+  .cards{display:flex;flex-direction:column;gap:10px;}
+  .card{
+    display:flex;align-items:center;gap:14px;
+    background:var(--panel);border:1px solid var(--line);
+    border-left:5px solid var(--c,#888);
+    border-radius:13px;padding:14px 16px;
+    animation:rise .35s ease both;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:none;}}
+  .dot{width:11px;height:11px;border-radius:50%;background:var(--c,#888);flex:none;box-shadow:0 0 0 4px color-mix(in srgb,var(--c) 22%,transparent);}
+  .card .type{font-weight:600;flex:1;min-width:120px;}
+  .card .days{font-family:'Fraunces',serif;font-weight:600;font-size:19px;letter-spacing:.01em;text-align:right;}
+  .card .days.none{font-family:'Spline Sans';font-weight:400;font-size:14px;color:var(--muted);font-style:italic;}
+  .card .days.refnote{font-family:'Spline Sans';font-weight:400;font-size:12.5px;color:var(--muted);max-width:230px;line-height:1.35;}
+  .note-day{font-size:11px;color:var(--muted);font-weight:400;font-family:'Spline Sans';}
+
+  details.legend{margin-top:22px;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:4px 16px;}
+  details.legend summary{cursor:pointer;padding:12px 0;font-weight:600;font-size:14px;color:var(--ink);list-style:none;display:flex;align-items:center;gap:8px;}
+  details.legend summary::-webkit-details-marker{display:none;}
+  details.legend summary::before{content:"›";transition:transform .2s;color:var(--accent);font-size:18px;line-height:1;}
+  details.legend[open] summary::before{transform:rotate(90deg);}
+  .legend p{font-size:13.5px;color:var(--muted);margin:0 0 12px;}
+
+  footer{margin-top:26px;font-size:12px;color:var(--muted);text-align:center;line-height:1.6;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Gmina Miękinia · 2026</div>
+    <h1>Kiedy wywożą śmieci?</h1>
+    <p class="sub">Wybierz typ zabudowy, lokalizację i miesiąc — zobaczysz, w jakich dniach
+      i jakiego rodzaju odpady są odbierane.</p>
+  </header>
+
+  <div class="modeswitch" id="modeswitch">
+    <div class="slider"></div>
+    <button class="modebtn active" data-mode="jednorodzinne">Zabudowa jednorodzinna</button>
+    <button class="modebtn" data-mode="wielorodzinne">Zabudowa wielorodzinna</button>
+  </div>
+  <p class="modehint" id="modehint">Domy jednorodzinne i pozostałe ze zbiórką indywidualną.</p>
+
+  <div class="controls">
+    <div class="field">
+      <label for="loc">Lokalizacja</label>
+      <select id="loc"></select>
+    </div>
+    <div class="field">
+      <label for="month">Miesiąc</label>
+      <select id="month"></select>
+    </div>
+  </div>
+
+  <div class="result" id="result"></div>
+
+  <details class="legend">
+    <summary>Co oznaczają rodzaje odpadów?</summary>
+    <p><b style="color:var(--zmieszane)">Zmieszane komunalne</b> — odpady resztkowe.
+       <b style="color:var(--tworzywa)">Tworzywa sztuczne</b> — plastik i metal.
+       <b style="color:var(--zielone)">Odpady zielone</b> — bio/ogrodowe.
+       <b style="color:var(--papier)">Papier</b>. <b style="color:var(--szklo)">Szkło</b>.
+       <b style="color:var(--wystawka)">Wystawka krawężnikowa</b> — wielkogabaryty, opony,
+       zużyty sprzęt elektryczny i elektroniczny, odzież i tekstylia (nowość od 2026 r.).</p>
+  </details>
+
+  <footer>
+    Harmonogram odbioru odpadów komunalnych 2026 — Gmina Miękinia.<br>
+    Zabudowa wielorodzinna: pojemniki zbiorcze 5 szt. × 1100 l.
+  </footer>
+</div>
+
+<script>
+const MONTHS = ["Styczeń","Luty","Marzec","Kwiecień","Maj","Czerwiec",
+                "Lipiec","Sierpień","Wrzesień","Październik","Listopad","Grudzień"];
+const TYPES = [
+  {key:"zmieszane", label:"Zmieszane komunalne", color:"var(--zmieszane)"},
+  {key:"tworzywa",  label:"Tworzywa sztuczne",   color:"var(--tworzywa)"},
+  {key:"zielone",   label:"Odpady zielone",      color:"var(--zielone)"},
+  {key:"papier",    label:"Papier",              color:"var(--papier)"},
+  {key:"szklo",     label:"Szkło",               color:"var(--szklo)"},
+  {key:"wystawka",  label:"Wystawka krawężnikowa",color:"var(--wystawka)"},
+];
+
+// 12 wartości na rząd = styczeń → grudzień. "-" = brak odbioru.
+const DATA = {
+  jednorodzinne: {
+    "Błonie, Kadłub, Przydroże, Wróblowice, Źródła": {
+      zmieszane:["12,26","9,23","9,23","4(sobota),20","4,18","1,15,29","13,27","10,24","7,21","5,19","2,16,30","14,28"],
+      tworzywa: ["12,26","9,23","9,23","4(sobota),20","4,18","1,15,29","13,27","10,24","7,21","5,19","2,16,30","14,28"],
+      zielone:  ["26","23","23","4(sobota),20","4,18","1,15,29","13,27","10,24","7,21","5,19","16","14"],
+      papier:   ["12","9","9","4(sobota)","4","1,29","27","24","21","19","16","14"],
+      szklo:    ["26","-","23","-","18","-","13","-","7","-","2","28"],
+      wystawka: ["-","-","7","-","-","-","-","-","-","-","-","-"]
+    },
+    "Czerna, Mrozów, Wojnowice, Wilkostów": {
+      zmieszane:["13,27","10,24","10,24","7,21","5,19","2,16,30","14,28","11,25","8,22","6,20","3,17","1,15,29"],
+      tworzywa: ["13,27","10,24","10,24","7,21","5,19","2,16,30","14,28","11,25","8,22","6,20","3,17","1,15,29"],
+      zielone:  ["27","24","24","7,21","5,19","2,16,30","14,28","11,25","8,22","6,20","17","15"],
+      papier:   ["13","10","10","7","5","2,30","28","25","22","20","17","15"],
+      szklo:    ["27","-","24","-","19","-","14","-","8","-","3","29"],
+      wystawka: ["-","-","21","-","-","-","-","-","-","-","-","-"]
+    },
+    "Białków, Gąsiorów, Głogi, Głoska, Księginice, Lenartowice, Lubiatów, Łąkoszyce, Warzyna, Zabór": {
+      zmieszane:["14,28","11,25","11,25","8,22","6,20","3,17","1,15,29","12,26","9,23","7,21","4,18","2,16,30"],
+      tworzywa: ["14,28","11,25","11,25","8,22","6,20","3,17","1,15,29","12,26","9,23","7,21","4,18","2,16,30"],
+      zielone:  ["28","25","25","8,22","6,20","3,17","1,15,29","12,26","9,23","7,21","18","16"],
+      papier:   ["14","11","11","8","6","3","1,29","26","23","21","18","16"],
+      szklo:    ["28","-","25","-","20","-","15","-","9","-","4","30"],
+      wystawka: ["-","-","-","18","-","-","-","-","-","-","-","-"]
+    },
+    "Brzezina, Wilkszyn 2 (ul. Grabowa, Wiśniowa i pozostałe wskazane)": {
+      zmieszane:["3(sobota),15,29","12,26","12,26","9,23","7,21","6(sobota),18","2,16,30","13,27","10,24","8,22","5,19","3,17,31"],
+      tworzywa: ["3(sobota),15,29","12,26","12,26","9,23","7,21","6(sobota),18","2,16,30","13,27","10,24","8,22","5,19","3,17,31"],
+      zielone:  ["29","26","26","9,23","7,21","6(sobota),18","2,16,30","13,27","10,24","8,22","19","17"],
+      papier:   ["15","12","12","9","7","6(sobota)","2,30","27","24","22","19","17"],
+      szklo:    ["29","-","26","-","21","-","16","-","10","-","5","31"],
+      wystawka: ["-","-","-","-","16","-","-","-","-","-","-","-"]
+    },
+    "m. Miękinia, Klęka": {
+      zmieszane:["2,16,30","13,27","13,27","10,24","8,22","5,19","3,17,31","14,28","11,25","9,23","6,20","4,18"],
+      tworzywa: ["2,16,30","13,27","13,27","10,24","8,22","5,19","3,17,31","14,28","11,25","9,23","6,20","4,18"],
+      zielone:  ["30","27","27","10,24","8,22","5,19","3,17,31","14,28","11,25","9,23","20","18"],
+      papier:   ["16","13","13","10","8","5","3,31","28","25","23","20","18"],
+      szklo:    ["30","-","27","-","22","-","17","-","11","-","6","02.01.2027"],
+      wystawka: ["-","-","-","-","30","-","-","-","-","-","-","-"]
+    },
+    "Kokorzyce, Krępice, Żurawiniec": {
+      zmieszane:["5,19","2,16","2,16,30","13,27","11,25","8,22","6,20","3,17,31","14,28","12,26","9,23","7,19"],
+      tworzywa: ["5,19","2,16","2,16,30","13,27","11,25","8,22","6,20","3,17,31","14,28","12,26","9,23","7,19"],
+      zielone:  ["19","16","16","13,27","11,25","8,22","6,20","3,17,31","14,28","12,26","23","7"],
+      papier:   ["5","2","2,30","27","25","22","20","17","14","12","9","7"],
+      szklo:    ["19","-","16","-","11","-","6","31","-","26","-","19"],
+      wystawka: ["-","-","-","-","-","20","-","-","-","-","-","-"]
+    },
+    "Brzezinka Średzka, Gosławice, Miłoszyn, Pisarzowice, Prężyce": {
+      zmieszane:["10(sobota),20","3,17","3,17,31","14,28","12,26","9,23","7,21","4,18","1,15,29","13,27","10,24","8,21"],
+      tworzywa: ["10(sobota),20","3,17","3,17,31","14,28","12,26","9,23","7,21","4,18","1,15,29","13,27","10,24","8,21"],
+      zielone:  ["20","17","17","14,28","12,26","9,23","7,21","4,18","1,15,29","13,27","24","8"],
+      papier:   ["10(sobota)","3","3,31","28","26","23","21","18","15","13","10","8"],
+      szklo:    ["20","-","17","-","12","-","7","-","1","27","-","21"],
+      wystawka: ["-","-","-","-","-","-","4","-","-","-","-","-"]
+    },
+    "Lutynia": {
+      zmieszane:["7,21","4,18","4,18","1,15,29","13,27","10,24","8,22","5,19","2,16,30","14,28","7(sobota),25","9,22"],
+      tworzywa: ["7,21","4,18","4,18","1,15,29","13,27","10,24","8,22","5,19","2,16,30","14,28","7(sobota),25","9,22"],
+      zielone:  ["21","18","18","1,15,29","13,27","10,24","8,22","5,19","2,16,30","14,28","25","9"],
+      papier:   ["7","4","4","1,29","27","24","22","19","16","14","7(sobota)","9"],
+      szklo:    ["21","-","18","-","13","-","8","-","2","28","-","22"],
+      wystawka: ["-","-","-","-","-","-","18","-","-","-","-","-"]
+    },
+    "Gałów, Gałówek, Łowęcice, Radakowice, Zakrzyce": {
+      zmieszane:["8,22","5,19","5,19","2,16,30","14,28","11,25","9,23","6,20","3,17","1,15,29","12,26","10,23"],
+      tworzywa: ["8,22","5,19","5,19","2,16,30","14,28","11,25","9,23","6,20","3,17","1,15,29","12,26","10,23"],
+      zielone:  ["22","19","19","2,16,30","14,28","11,25","9,23","6,20","3,17","1,15,29","26","10"],
+      papier:   ["8","5","5","2,30","28","25","23","20","17","15","12","10"],
+      szklo:    ["22","-","19","-","14","-","9","-","3","29","-","23"],
+      wystawka: ["-","-","-","-","-","-","-","1","-","-","-","-"]
+    },
+    "Wilkszyn 1 (poza wskazanymi ulicami)": {
+      zmieszane:["9,23","6,20","6,20","3,17","2(sobota),15,29","12,26","10,24","7,21","4,18","2,16,30","13,27","11,21(poniedziałek)"],
+      tworzywa: ["9,23","6,20","6,20","3,17","2(sobota),15,29","12,26","10,24","7,21","4,18","2,16,30","13,27","11,22(wtorek)"],
+      zielone:  ["23","20","20","3,17","2(sobota),15,29","12,26","10,24","7,21","4,18","2,16,30","27","11"],
+      papier:   ["9","6","6","3","2(sobota),29","26","24","21","18","16","13","11"],
+      szklo:    ["23","-","20","-","15","-","10","-","4","30","-","19(sobota)"],
+      wystawka: ["-","-","-","-","-","-","-","29","-","-","-","-"]
+    }
+  },
+  wielorodzinne: {
+    "Gałów": {
+      zmieszane:["5,12,19,26","2,9,16,23","2,9,16,23,30","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","2,9,16,23,30","7,14,19,28"],
+      tworzywa: ["5,12,19,26","2,9,16,23","2,9,16,23,30","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","2,9,16,23,30","7,14,19,28"],
+      zielone:  ["22","19","19","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","26","10"],
+      papier:   ["5,12,19,26","2,9,16,23","2,9,16,23,30","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","2,9,16,23,30","7,14,19,28"],
+      szklo:    ["12,26","9,23","9,23","4(sobota),20","4,18","1,15,29","13,27","10,24","7,21","5,19","2,16,30","14,28"],
+      wystawka: "ref"
+    },
+    "Lutynia": {
+      zmieszane:["5,12,19,26","2,9,16,23","2,9,16,23,30","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","2,9,16,23,30","7,14,19,28"],
+      tworzywa: ["5,12,19,26","2,9,16,23","2,9,16,23,30","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","2,9,16,23,30","7,14,19,28"],
+      zielone:  ["21","18","18","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","25","9"],
+      papier:   ["5,12,19,26","2,9,16,23","2,9,16,23,30","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","2,9,16,23,30","7,14,19,28"],
+      szklo:    ["12,26","9,23","9,23","4(sobota),20","4,18","1,15,29","13,27","10,24","7,21","5,19","2,16,30","14,28"],
+      wystawka: "ref"
+    },
+    "Wilkszyn": {
+      zmieszane:["5,12,19,26","2,9,16,23","2,9,16,23,30","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","2,9,16,23,30","7,14,19,28"],
+      tworzywa: ["5,12,19,26","2,9,16,23","2,9,16,23,30","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","2,9,16,23,30","7,14,19,28"],
+      zielone:  ["23","20","20","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","27","11"],
+      papier:   ["5,12,19,26","2,9,16,23","2,9,16,23,30","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","2,9,16,23,30","7,14,19,28"],
+      szklo:    ["12,26","9,23","9,23","4(sobota),20","4,18","1,15,29","13,27","10,24","7,21","5,19","2,16,30","14,28"],
+      wystawka: "ref"
+    },
+    "Krępice, Wróblowice, Źródła": {
+      zmieszane:["5,12,19,26","2,9,16,23","2,9,16,23,30","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","2,9,16,23,30","7,14,19,28"],
+      tworzywa: ["5,12,19,26","2,9,16,23","2,9,16,23,30","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","2,9,16,23,30","7,14,19,28"],
+      zielone:  ["26","23","23","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","16","14"],
+      papier:   ["5,12,19,26","2,9,16,23","2,9,16,23,30","4(sobota),13,20,27","4,11,18,25","1,8,15,22,29","6,13,20,27","3,10,17,24,31","7,14,21,28","5,12,19,26","2,9,16,23,30","7,14,19,28"],
+      szklo:    ["12,26","9,23","9,23","4(sobota),20","4,18","1,15,29","13,27","10,24","7,21","5,19","2,16,30","14,28"],
+      wystawka: "ref"
+    },
+    "m. Miękinia, Klęka": {
+      zmieszane:["2,9,16,23,30","6,13,20,27","6,13,20,27","3,10,17,24","2(sobota),8,15,22,29","5,12,19,26","3,10,17,24,31","7,14,21,28","4,11,18,25","2,9,16,23,30","6,13,20,27","4,11,18,21(poniedziałek)"],
+      tworzywa: ["2,9,16,23,30","6,13,20,27","6,13,20,27","3,10,17,24","2(sobota),8,15,22,29","5,12,19,26","3,10,17,24,31","7,14,21,28","4,11,18,25","2,9,16,23,30","6,13,20,27","4,11,18,21(poniedziałek)"],
+      zielone:  ["30","27","27","3,10,17,24","2(sobota),8,15,22,29","5,12,19,26","3,10,17,24,31","7,14,21,28","4,11,18,25","2,9,16,23,30","20","18"],
+      papier:   ["2,9,16,23,30","6,13,20,27","6,13,20,27","3,10,17,24","2(sobota),8,15,22,29","5,12,19,26","3,10,17,24,31","7,14,21,28","4,11,18,25","2,9,16,23,30","6,13,20,27","4,11,18,21(poniedziałek)"],
+      szklo:    ["2,16,30","13,27","13,27","10,24","8,22","5,19","3,17,31","14,28","11,25","9,23","6,20","4,18"],
+      wystawka: "ref"
+    }
+  }
+};
+
+const MODE_HINTS = {
+  jednorodzinne:"Domy jednorodzinne i pozostałe ze zbiórką indywidualną.",
+  wielorodzinne:"Pojemniki zbiorcze 5 szt. × 1100 l (zabudowa wielorodzinna)."
+};
+
+const locSel   = document.getElementById("loc");
+const monthSel  = document.getElementById("month");
+const resultEl  = document.getElementById("result");
+const modeSwitch= document.getElementById("modeswitch");
+const modeHint  = document.getElementById("modehint");
+
+let mode = "jednorodzinne";
+
+MONTHS.forEach((m,i)=>{
+  const o=document.createElement("option");o.value=i;o.textContent=m;monthSel.appendChild(o);
+});
+
+function populateLocations(){
+  locSel.innerHTML = "";
+  const names = Object.keys(DATA[mode]);
+  names.forEach(name=>{
+    const o=document.createElement("option");o.value=name;o.textContent=name;locSel.appendChild(o);
+  });
+}
+
+function formatDays(raw){
+  return raw.split(",").map(p=>{
+    const t=p.trim();
+    const m=t.match(/^([\d.]+)\s*(\(.+\))$/);
+    if(m) return `${m[1]} <span class="note-day">${m[2]}</span>`;
+    return t;
+  }).join(", ");
+}
+
+function render(){
+  const loc = locSel.value, mi = monthSel.value;
+  if(!loc || mi===""){resultEl.innerHTML=""; return;}
+  const monthIdx = Number(mi);
+  const schedule = DATA[mode][loc];
+  let cards = "";
+  TYPES.forEach(t=>{
+    let inner;
+    if(t.key==="wystawka" && schedule.wystawka==="ref"){
+      inner = `<span class="days refnote">jak w zabudowie jednorodzinnej dla tej miejscowości</span>`;
+    } else {
+      const raw = (schedule[t.key]||[])[monthIdx] || "-";
+      const none = raw.trim()==="-" || raw.trim()==="";
+      inner = `<span class="days ${none?'none':''}">${none?'brak odbioru':formatDays(raw)}</span>`;
+    }
+    cards += `
+      <div class="card" style="--c:${t.color}">
+        <span class="dot"></span>
+        <span class="type">${t.label}</span>
+        ${inner}
+      </div>`;
+  });
+  resultEl.innerHTML = `
+    <div class="result-head">
+      <h2>${MONTHS[monthIdx]} 2026</h2>
+      <span class="where">${loc}</span>
+    </div>
+    <div class="cards">${cards}</div>`;
+}
+
+// przełącznik zabudowy
+modeSwitch.querySelectorAll(".modebtn").forEach(btn=>{
+  btn.addEventListener("click",()=>{
+    const newMode = btn.dataset.mode;
+    if(newMode===mode) return;
+    mode = newMode;
+    modeSwitch.querySelectorAll(".modebtn").forEach(b=>b.classList.toggle("active",b===btn));
+    modeSwitch.classList.toggle("right", mode==="wielorodzinne");
+    modeHint.textContent = MODE_HINTS[mode];
+    populateLocations();
+    render();
+  });
+});
+
+locSel.addEventListener("change",render);
+monthSel.addEventListener("change",render);
+
+// ustawienia domyślne
+populateLocations();
+locSel.value = "Wilkszyn 1 (poza wskazanymi ulicami)";
+monthSel.value = "5"; // czerwiec
+render();
+</script>
+</body>
+</html>
